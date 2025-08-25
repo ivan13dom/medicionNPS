@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Configurar sucursal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1>Configurar dispositivo</h1>
+    <div class="section">
+      <label for="branch">Sucursal</label>
+      <div class="controls">
+        <select id="branch"></select>
+        <button id="save">Guardar</button>
+        <button id="clear">Limpiar</button>
+      </div>
+      <p class="muted">Esta pantalla es para el personal. El cliente no ve esta configuración.</p>
+    </div>
+    <div class="section">
+      <a class="link" href="survey.html">Ir a la encuesta</a>
+    </div>
+  </main>
+
+  <div id="alert" class="overlay"><div class="card"><div class="big" id="alertText"></div></div></div>
+
+  <script>
+    window.__CONFIG__ = { API_BASE: "REEMPLAZA_CON_URL_BACKEND" };
+  </script>
+  <script src="setup.js"></script>
+</body>
+</html>

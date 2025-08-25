@@ -1,0 +1,22 @@
+[
+  {
+    "id": "NDELTA",
+    "name": "Nordelta"
+  },
+  {
+    "id": "GPAZ-CBA",
+    "name": "Córdoba — Av. Gral Paz"
+  },
+  {
+    "id": "ROS-EVAPERON",
+    "name": "Rosario — Av. Eva Perón"
+  },
+  {
+    "id": "JUJUY-CENTRO",
+    "name": "Jujuy — Centro"
+  },
+  {
+    "id": "TUCUMAN",
+    "name": "Tucumán"
+  }
+]

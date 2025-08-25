@@ -1,0 +1,22 @@
+:root { --bg:#0b1324; --card:#111827; --muted:#94a3b8; --line:#22324d; }
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,Ubuntu;color:#e5e7eb;background:radial-gradient(1200px 600px at 50% -10%,#1f2a44,transparent), var(--bg)}
+.wrap{max-width:720px;margin:3rem auto;padding:1.5rem;background:var(--card);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+h1{margin:0 0 1rem;font-weight:700;letter-spacing:.2px}
+.section{margin:1.5rem 0}
+label{display:block;margin:.25rem 0 .5rem;color:#cbd5e1}
+select,button{padding:.8rem .9rem;border-radius:12px;border:1px solid var(--line);background:#0f172a;color:#fff;font-size:1rem}
+.controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.faces{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin:1.5rem 0}
+.face{padding:1rem;border-radius:16px;border:1px solid var(--line);background:#0f172a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s, border-color .2s}
+.face svg{width:48px;height:48px}
+.face:active{transform:scale(.96)}
+.face.spin{animation:spin 600ms ease forwards}
+@keyframes spin{to{transform:rotate(360deg) scale(1.04)}}
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);z-index:10}
+.overlay.show{display:flex}
+.card{background:#0f172a;border:1px solid var(--line);padding:2rem 2.5rem;border-radius:18px;text-align:center}
+.big{font-size:1.6rem;margin-bottom:.5rem}
+.link{display:inline-block;margin-top:.75rem;color:#93c5fd;text-decoration:none}
+.link:hover{text-decoration:underline}

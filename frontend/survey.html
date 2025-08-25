@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Encuesta de Satisfacción</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1>¿Cómo fue tu experiencia?</h1>
+    <div class="section muted" id="branchInfo"></div>
+
+    <section class="faces">
+      <button class="face" data-rating="1" aria-label="Muy mala"><svg viewBox="0 0 48 48" aria-hidden="true">
+  <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+  <circle cx="18" cy="20" r="2" fill="currentColor"/>
+  <circle cx="30" cy="20" r="2" fill="currentColor"/>
+  <path d="M18 30 q6-6 12 0" stroke="currentColor" fill="none" stroke-width="2"/>
+</svg></button>
+      <button class="face" data-rating="2" aria-label="Mala"><svg viewBox="0 0 48 48" aria-hidden="true">
+  <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+  <circle cx="18" cy="20" r="2" fill="currentColor"/>
+  <circle cx="30" cy="20" r="2" fill="currentColor"/>
+  <path d="M18 32 q6-4 12 0" stroke="currentColor" fill="none" stroke-width="2"/>
+</svg></button>
+      <button class="face" data-rating="3" aria-label="Neutral"><svg viewBox="0 0 48 48" aria-hidden="true">
+  <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+  <circle cx="18" cy="20" r="2" fill="currentColor"/>
+  <circle cx="30" cy="20" r="2" fill="currentColor"/>
+  <line x1="18" y1="30" x2="30" y2="30" stroke="currentColor" stroke-width="2"/>
+</svg></button>
+      <button class="face" data-rating="4" aria-label="Buena"><svg viewBox="0 0 48 48" aria-hidden="true">
+  <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+  <circle cx="18" cy="20" r="2" fill="currentColor"/>
+  <circle cx="30" cy="20" r="2" fill="currentColor"/>
+  <path d="M18 28 q6 6 12 0" stroke="currentColor" fill="none" stroke-width="2"/>
+</svg></button>
+      <button class="face" data-rating="5" aria-label="Excelente"><svg viewBox="0 0 48 48" aria-hidden="true">
+  <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+  <circle cx="18" cy="20" r="2" fill="currentColor"/>
+  <circle cx="30" cy="20" r="2" fill="currentColor"/>
+  <path d="M18 26 q6 10 12 0" stroke="currentColor" fill="none" stroke-width="2"/>
+</svg></button>
+    </section>
+
+    <div class="section">
+      <a class="link" href="setup.html">Cambiar sucursal</a>
+    </div>
+  </main>
+
+  <div id="thanks" class="overlay"><div class="card"><div class="big">¡Gracias! 🙌</div><div>Tu respuesta fue registrada.</div></div></div>
+  <div id="error" class="overlay"><div class="card"><div class="big">Sin conexión</div><div>Guardamos tu respuesta y la enviaremos luego.</div></div></div>
+
+  <script>
+    window.__CONFIG__ = { API_BASE: "REEMPLAZA_CON_URL_BACKEND" };
+  </script>
+  <script src="survey.js"></script>
+</body>
+</html>
