@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": "068fd5d1fc168cc418c9d98d",
+    "ts": "2025-08-26T12:38:29.925519Z",
+    "branch_id": "Error al cargar sucursales",
+    "rating": 3,
+    "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+    "meta": {
+      "screen": {
+        "w": 1366,
+        "h": 599
+      }
+    }
+  }
+]
