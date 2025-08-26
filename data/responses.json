@@ -63,5 +63,18 @@
         "h": 599
       }
     }
+  },
+  {
+    "id": "c38d27ef39a96601018122fa",
+    "ts": "2025-08-26T19:16:57.866970Z",
+    "branch_id": "NDELTA",
+    "rating": 4,
+    "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+    "meta": {
+      "screen": {
+        "w": 1366,
+        "h": 599
+      }
+    }
   }
 ]
