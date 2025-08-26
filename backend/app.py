@@ -1,7 +1,6 @@
-import os, json, datetime, subprocess, logging
+import os, json, datetime, subprocess, logging, time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -12,38 +11,66 @@ GITHUB_TOKEN  = os.getenv("GITHUB_TOKEN")
 BRANCHES_FILE = os.getenv("BRANCHES_FILE", "data/branches.json")
 RESP_FILE     = os.getenv("RESP_FILE", "data/responses.json")
 
-def _git(*args, cwd='.'):
-    import subprocess
-    return subprocess.run(list(args), cwd=cwd, check=True)
+def sh(args, cwd=".", check=True, capture=False):
+    return subprocess.run(args, cwd=cwd, check=check,
+                          capture_output=capture, text=True)
 
-def commit_to_github(filename: str, content_as_obj):
-    repo_path = "."
-    if not os.path.isdir(os.path.join(repo_path, ".git")):
-        _git("git", "init", cwd=repo_path)
-        _git("git", "checkout", "-b", "main", cwd=repo_path)
-        _git("git", "remote", "add", "origin", f"https://github.com/{GITHUB_REPO}.git", cwd=repo_path)
+def ensure_repo():
+    if not os.path.isdir(".git"):
+        sh(["git", "init"])
+        sh(["git", "checkout", "-b", "main"])
+        sh(["git", "remote", "add", "origin", f"https://github.com/{GITHUB_REPO}.git"])
+    # identidad (global ok)
+    subprocess.run(["git", "config", "--global", "user.email", "bot@render.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "Render Bot"])
+    # sync a último commit remoto
+    sh(["git", "fetch", "origin"])
+    sh(["git", "checkout", "main"])
+    sh(["git", "reset", "--hard", "origin/main"])
 
-    subprocess.run(["git", "config", "--global", "user.email", "bot@render.com"], check=False)
-    subprocess.run(["git", "config", "--global", "user.name", "Render Bot"], check=False)
+def load_json_list(path):
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
 
-    _git("git", "fetch", "origin", cwd=repo_path)
-    _git("git", "checkout", "main", cwd=repo_path)
-    _git("git", "reset", "--hard", "origin/main", cwd=repo_path)
+def save_json(path, obj):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, indent=2)
 
-    abs_path = os.path.join(repo_path, filename)
-    os.makedirs(os.path.dirname(abs_path), exist_ok=True)
-    with open(abs_path, "w", encoding="utf-8") as f:
-        json.dump(content_as_obj, f, ensure_ascii=False, indent=2)
+def push_with_retry(filename, merge_fn, max_tries=5):
+    """merge_fn(current_list) -> new_list  (idempotente)
+       Reintenta si hay conflictos de avance (non-fast-forward)."""
+    for i in range(max_tries):
+        ensure_repo()
+        abs_path = os.path.join(".", filename)
+        current = load_json_list(abs_path)
 
-    _git("git", "add", filename, cwd=repo_path)
-    status = subprocess.run(["git", "status", "--porcelain"], cwd=repo_path, capture_output=True, text=True)
-    if not status.stdout.strip():
-        app.logger.info(f"Sin cambios en {filename}.")
-        return
+        # construir nuevo contenido
+        updated = merge_fn(current)
+        save_json(abs_path, updated)
 
-    _git("git", "commit", "-m", f"update {filename}", cwd=repo_path)
-    push_url = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_REPO}.git"
-    _git("git", "push", push_url, "main", cwd=repo_path)
+        sh(["git", "add", filename])
+        sh(["git", "commit", "-m", f"update {filename}"])
+        try:
+            push_url = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_REPO}.git"
+            sh(["git", "push", push_url, "main"])
+            return True
+        except subprocess.CalledProcessError as e:
+            # Pull --rebase y reintento (otro request se adelantó)
+            app.logger.warning(f"Push failed (try {i+1}), retrying... {e}")
+            # Volver a sincronizar con remoto y reintentar
+            sh(["git", "fetch", "origin"])
+            sh(["git", "rebase", "origin/main"], check=False)
+            # Si el rebase falla, hacemos reset duro y reintentamos con nuevo merge
+            sh(["git", "reset", "--hard", "origin/main"])
+            time.sleep(0.2 * (i + 1))  # backoff corto
+    return False
 
 @app.get("/health")
 def health():
@@ -51,14 +78,16 @@ def health():
 
 @app.get("/branches")
 def get_branches():
-    raw_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{BRANCHES_FILE}"
-    r = requests.get(raw_url, timeout=10)
-    if r.status_code == 200:
-        try:
-            return jsonify(r.json())
-        except Exception:
-            return jsonify([])
-    return jsonify([])
+    # Leer branches desde el repo local sincronizado
+    try:
+        ensure_repo()
+        path = os.path.join(".", BRANCHES_FILE)
+        return app.response_class(
+            response=json.dumps(load_json_list(path)),
+            status=200, mimetype="application/json"
+        )
+    except Exception:
+        return app.response_class(response="[]", status=200, mimetype="application/json")
 
 @app.post("/submit")
 def submit():
@@ -74,15 +103,6 @@ def submit():
     if rating not in [1,2,3,4,5] or not branch_id:
         return jsonify({"error": "payload inválido"}), 400
 
-    raw_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{RESP_FILE}"
-    try:
-        r = requests.get(raw_url, timeout=10)
-        current = r.json() if r.status_code == 200 else []
-        if not isinstance(current, list):
-            current = []
-    except Exception:
-        current = []
-
     now = datetime.datetime.utcnow().isoformat() + "Z"
     rec = {
         "id": os.urandom(12).hex(),
@@ -92,9 +112,14 @@ def submit():
         "device": device,
         "meta": meta
     }
-    current.append(rec)
-    commit_to_github(RESP_FILE, current)
-    return jsonify({"ok": True, "id": rec["id"]})
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+    def merge_fn(current):
+        # current es la lista leída DESPUÉS de sync con remoto
+        current = current[:] if isinstance(current, list) else []
+        current.append(rec)
+        return current
+
+    ok = push_with_retry(RESP_FILE, merge_fn)
+    if not ok:
+        return jsonify({"error": "no se pudo guardar (reintentos agotados)"}), 500
+    return jsonify({"ok": True, "id": rec["id"]})
